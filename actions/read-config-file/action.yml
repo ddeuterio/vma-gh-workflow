@@ -26,3 +26,7 @@ runs:
         CONFIG_FILE_PATH: ${{ inputs.config-file-path }}
       run: |
         python "${{ github.action_path }}/read.py"
+
+    - name: Print config file content 
+      run: |
+        echo "${{ steps.read.outputs.config }}" | jq
