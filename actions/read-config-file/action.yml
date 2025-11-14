@@ -30,4 +30,4 @@ runs:
     - name: Print config file content 
       shell: bash
       run: |
-        echo "${{ steps.read.outputs.config }}" | jq
+        echo '${{ steps.read.outputs.config }}' | jq
