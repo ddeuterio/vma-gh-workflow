@@ -1,0 +1,28 @@
+name: 'read-config-file action'
+author: 'ddeuterio'
+
+inputs:
+  config-file-path:
+    required: true
+    type: string
+
+outputs:
+  config:
+    description: "app config data to be used with fromJSON()"
+    value: ${{ steps.read.outputs.config }}
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure PyYAML is installed
+      shell: bash
+      run: |
+        python -m pip install --quiet pyyaml
+
+    - name: Read config file
+      id: read
+      shell: bash
+      env:
+        CONFIG_FILE_PATH: ${{ inputs.config-file-path }}
+      run: |
+        python "${{ github.action_path }}/read.py"

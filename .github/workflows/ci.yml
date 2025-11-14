@@ -1,0 +1,86 @@
+name: CI workflow
+author: ddeuterio
+
+on:
+  workflow_call:
+    inputs:
+      config-file-path:
+        required: true
+        type: string
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Read config file
+      uses: ddeuterio/vma-gh-workflows/actions/read-config-file/action@main
+      with:
+        config-file-path: ${{ inputs.config-file-path }}
+  ci:
+    runs-on: ubuntu-latest
+    needs: [config]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ fromJSON(needs.config.outputs.config).python_version }}
+
+    - name: Cache Poetry & pip
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pypoetry
+          ~/.cache/pip
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Set dynamic build version
+      run: |
+        BASE_VERSION=$(poetry version -s)
+        NEW_VERSION="${BASE_VERSION}.${{ github.run_number }}"
+        echo "Setting version to ${NEW_VERSION}"
+        poetry version "${NEW_VERSION}"
+
+    - name: Install dependencies (no project install)
+      run: poetry install --no-interaction --no-root
+
+    - name: Lint (optional)
+      if: ${{ fromJSON(needs.config.outputs.config).ci.run_lint }} == 'true'
+      run: |
+        if poetry run python -c "import importlib; importlib.util.find_spec('flake8')" >/dev/null 2>&1; then
+          poetry run flake8 src/ tests/
+        else
+          echo "flake8 not configured; skipping lint."
+        fi
+
+    - name: Run tests
+      if: ${{ fromJSON(needs.config.outputs.config).ci.run_tests }} == 'true'
+      run: |
+        if poetry run python -c "import importlib; importlib.util.find_spec('pytest')" >/dev/null 2>&1; then
+          poetry run pytest -v --maxfail=1 --disable-warnings
+        else
+          echo "pytest not configured; skipping tests."
+        fi
+
+    - name: Build package (wheel + sdist)
+      run: poetry build
+
+    - name: Upload dist artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: poetry-dist
+        path: dist/*
+        if-no-files-found: error
+        retention-days: 14
