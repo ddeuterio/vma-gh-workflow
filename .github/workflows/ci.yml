@@ -30,7 +30,8 @@ jobs:
 
     - name: Debug json output
       shell: bash
-      run: echo '${{ needs.config.outputs.config }}' | jq
+      run: |
+        echo '${{ needs.config.outputs.config }}' | jq
 
     - name: Set up Python
       uses: actions/setup-python@v5
