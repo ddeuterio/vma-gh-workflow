@@ -10,11 +10,14 @@ on:
 jobs:
   config:
     runs-on: ubuntu-latest
+    outputs:
+      config: ${{ steps.read.output.config }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Read config file
+      id: read
       uses: ddeuterio/vma-gh-workflow/actions/read-config-file@main
       with:
         config-file-path: ${{ inputs.config-file-path }}
