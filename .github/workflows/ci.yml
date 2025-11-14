@@ -28,11 +28,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Debug json output
-      shell: bash
-      run: |
-        echo '${{ needs.config.outputs.config }}' | jq
-
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -63,8 +58,8 @@ jobs:
     - name: Install dependencies (no project install)
       run: poetry install --no-interaction --no-root
 
-    - name: Lint (optional)
-      if: ${{ fromJSON(needs.config.outputs.config).ci.run_lint }} == 'true'
+    - name: Lint
+      if: ${{ fromJSON(needs.config.outputs.config).ci.run_lint == true }}
       run: |
         if poetry run python -c "import importlib; importlib.util.find_spec('flake8')" >/dev/null 2>&1; then
           poetry run flake8 src/ tests/
@@ -73,7 +68,7 @@ jobs:
         fi
 
     - name: Run tests
-      if: ${{ fromJSON(needs.config.outputs.config).ci.run_tests }} == 'true'
+      if: ${{ fromJSON(needs.config.outputs.config).ci.run_tests == true }}
       run: |
         if poetry run python -c "import importlib; importlib.util.find_spec('pytest')" >/dev/null 2>&1; then
           poetry run pytest -v --maxfail=1 --disable-warnings
@@ -85,6 +80,7 @@ jobs:
       run: poetry build
 
     - name: Upload dist artifacts
+      if: ${{ fromJSON(needs.config.outputs.config).ci.run_publish == true }}
       uses: actions/upload-artifact@v4
       with:
         name: poetry-dist
