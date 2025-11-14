@@ -28,5 +28,6 @@ runs:
         python "${{ github.action_path }}/read.py"
 
     - name: Print config file content 
+      shell: bash
       run: |
         echo "${{ steps.read.outputs.config }}" | jq
