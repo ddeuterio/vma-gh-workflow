@@ -23,7 +23,7 @@ jobs:
         config-file-path: ${{ inputs.config-file-path }}
   ci:
     runs-on: ubuntu-latest
-    needs: [config]
+    needs: config
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
