@@ -1,5 +1,4 @@
 name: CI workflow
-author: ddeuterio
 
 on:
   workflow_call:
