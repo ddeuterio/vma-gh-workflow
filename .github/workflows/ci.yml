@@ -22,7 +22,7 @@ jobs:
       with:
         config-file-path: ${{ inputs.config-file-path }}
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: config
     steps:
     - name: Checkout repository
