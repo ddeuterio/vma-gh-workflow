@@ -67,6 +67,11 @@ jobs:
           echo "flake8 not configured; skipping lint."
         fi
 
+    - name: Prepare dir for tests
+      if: ${{ fromJSON(needs.config.outputs.config).ci.run_tests == true }}
+      run: |
+        cp tests/.env.test .env
+
     - name: Run tests
       if: ${{ fromJSON(needs.config.outputs.config).ci.run_tests == true }}
       run: |
