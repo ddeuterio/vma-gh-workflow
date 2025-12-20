@@ -18,7 +18,6 @@ jobs:
 
     - name: Read config file
       id: read
-      secrets: inherit
       uses: ddeuterio/vma-gh-workflow/actions/read-config-file@main
       with:
         config-file-path: ${{ inputs.config-file-path }}
@@ -110,7 +109,6 @@ jobs:
 
   security: # will run on parallel with the ci job
     needs: config
-    id: security
     secrets: inherit
     if: ${{ fromJSON(needs.config.outputs.config).ci.run_security == true }}
     uses: ddeuterio/vma-gh-workflow/.github/workflows/semgrep.yml@main
