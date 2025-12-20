@@ -46,13 +46,7 @@ jobs:
 
       - name: Run semgrep
         run: |
-          if [[ "${{ inputs.fail_on_error }}" == "true" ]]; then
-            # Fail on ERROR level (HIGH/CRITICAL) findings only
-            semgrep ci --error --sarif --output=semgrep.sarif
-          else
-            # Report all findings but don't fail build
             semgrep ci --sarif --output=semgrep.sarif
-          fi
         continue-on-error: ${{ inputs.fail_on_error == false }}
         # fail_on_error: ${{ github.ref == 'refs/heads/main' }}
 
