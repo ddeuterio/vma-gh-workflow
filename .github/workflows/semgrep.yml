@@ -42,12 +42,11 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.ref }}
 
-      - name: Run semgrep
+      - name: Run Semgrep CI
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-        run: |
-            semgrep ci --sarif --output=semgrep.sarif
-        continue-on-error: ${{ inputs.fail_on_error == false }}
+        run: semgrep ci --sarif --output=semgrep.sarif
+        # continue-on-error: ${{ inputs.fail_on_error == false }}
         # fail_on_error: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Upload SARIF to GitHub Security                                                                                                                                                                   
