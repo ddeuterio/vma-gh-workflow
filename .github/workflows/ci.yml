@@ -108,6 +108,7 @@ jobs:
         retention-days: 14
 
   security: # will run on parallel with the ci job
+    needs: config
     if: ${{ fromJSON(needs.config.outputs.config).ci.run_security == true }}
     uses: ddeuterio/vma-gh-workflow/.github/workflows/semgrep.yml@main
     with:
