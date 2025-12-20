@@ -1,0 +1,62 @@
+name: Semgrep CE scan
+
+on:
+  # Standalone triggers (when deployed to individual repos)
+  pull_request:
+  workflow_dispatch: {}
+  push:
+    branches: ["main"]
+
+  # Reusable workflow trigger (called from ci.yml)
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
+        default: ''
+      fail_on_error:
+        description: 'Fail the build on HIGH/CRITICAL severity findings'
+        required: false
+        type: boolean
+        default: false
+
+  # Schedule the CI job (this method uses cron syntax):
+  # schedule:
+  #   - cron: '20 17 * * *' # Change to a random time
+
+permissions:
+  contents: read
+  security-events: write  # Required for SARIF upload
+
+jobs:
+  semgrep:
+    name: semgrep-oss/scan
+    runs-on: ubuntu-slim
+
+    container:
+      image: semgrep/semgrep
+
+    if: (github.actor != 'dependabot[bot]')
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Run semgrep
+        run: |
+          if [[ "${{ inputs.fail_on_error }}" == "true" ]]; then
+            # Fail on ERROR level (HIGH/CRITICAL) findings only
+            semgrep scan --config auto --error --sarif --output=semgrep.sarif
+          else
+            # Report all findings but don't fail build
+            semgrep scan --config auto --sarif --output=semgrep.sarif
+          fi
+        continue-on-error: ${{ inputs.fail_on_error == false }}
+        # fail_on_error: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Upload SARIF to GitHub Security                                                                                                                                                                   
+        uses: github/codeql-action/upload-sarif@v3                                                                                                                                                              
+        if: always()  # Upload even if scan found issues                                                                                                                                                        
+        with:                                                                                                                                                                                                   
+          sarif_file: semgrep.sarif

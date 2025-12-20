@@ -48,13 +48,6 @@ jobs:
         curl -sSL https://install.python-poetry.org | python3 -
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-    - name: Set dynamic build version
-      run: |
-        BASE_VERSION=$(poetry version -s)
-        NEW_VERSION="${BASE_VERSION}.${{ github.run_number }}"
-        echo "Setting version to ${NEW_VERSION}"
-        poetry version "${NEW_VERSION}"
-
     - name: Install dependencies (no project install)
       run: poetry install --no-interaction --no-root
 
@@ -77,6 +70,31 @@ jobs:
       run: |
         poetry run pytest -v --maxfail=1 --disable-warnings
 
+    - name: Cache Poetry & pip
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/pypoetry
+          ~/.cache/pip
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Set dynamic build version
+      run: |
+        BASE_VERSION=$(poetry version -s)
+        NEW_VERSION="${BASE_VERSION}.${{ github.run_number }}"
+        echo "Setting version to ${NEW_VERSION}"
+        poetry version "${NEW_VERSION}"
+
+    - name: Install dependencies (no project install)
+      run: poetry install --no-interaction --no-root
+
     - name: Build package (wheel + sdist)
       run: poetry build
 
@@ -88,3 +106,12 @@ jobs:
         path: dist/*
         if-no-files-found: error
         retention-days: 14
+
+  security: # will run on parallel with the ci job
+    if: ${{ fromJSON(needs.config.outputs.config).ci.run_security == true }}
+    uses: ddeuterio/vma-gh-workflow/.github/workflows/semgrep.yml@main
+    with:
+      fail_on_error: ${{ fromJSON(needs.config.outputs.config).ci.security_fail_on_error || false }}
+    permissions:
+      contents: read
+      security-events: write
