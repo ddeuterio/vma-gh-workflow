@@ -41,20 +41,35 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref || github.ref }}
-          # fetch-depth: 0  # Full git history for diff scanning
+          fetch-depth: 0  # Full git history for diff scanning
 
       - name: Run Semgrep CI
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+          RUN_SCA: ${{ inputs.run_sca }}
+          EXPORT_SARIF: ${{ inputs.export_sarif }}
+          FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
         run: |
-          # Verify token is set
           if [ -z "$SEMGREP_APP_TOKEN" ]; then
             echo "Error: SEMGREP_APP_TOKEN is not set"
             exit 1
           fi
+          
+          sca=""
+          if [ "$RUN_SCA" = "true" ]; then
+            sca="--supply-chain"
+          fi
 
-          # Run semgrep ci with SARIF output
-          semgrep ci --sarif-output=semgrep.sarif
+          export=""
+          if [ "$EXPORT_SARIF" = "true" ]; then
+            export="--sarif-output=semgrep.sarif"
+          fi
+          
+          errors=""
+          if [ "$FAIL_ON_ERROR" = "true" ]; then
+            errors="--no-suppress-errors"
+          fi
+          semgrep ci $sca $export $errors
         continue-on-error: ${{ inputs.fail_on_error == false }}
 
       - name: Upload SARIF to GitHub Security

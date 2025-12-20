@@ -114,6 +114,9 @@ jobs:
     uses: ddeuterio/vma-gh-workflow/.github/workflows/semgrep.yml@main
     with:
       fail_on_error: ${{ fromJSON(needs.config.outputs.config).ci.security_fail_on_error || false }}
+      run_sast: ${{ fromJSON(needs.config.outputs.config).ci.run_security_sast || false }}
+      run_sca: ${{ fromJSON(needs.config.outputs.config).ci.run_security_sca || false }}
+      export_sarif: ${{ fromJSON(needs.config.outputs.config).ci.security_export_sarif || false }}
     permissions:
       contents: read
       security-events: write
