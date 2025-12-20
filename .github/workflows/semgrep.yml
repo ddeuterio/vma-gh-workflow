@@ -19,6 +19,16 @@ on:
         required: false
         type: boolean
         default: false
+      run_sca:
+        description: 'Run SCA'
+        required: false
+        type: boolean
+        default: false
+      export_sarif:
+        description: 'Export data in sarif format to upload it to GH Security'
+        required: false
+        type: boolean
+        default: false
 
   # Schedule the CI job (this method uses cron syntax):
   # schedule:
@@ -46,31 +56,17 @@ jobs:
       - name: Run Semgrep CI
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-          RUN_SCA: ${{ inputs.run_sca }}
-          EXPORT_SARIF: ${{ inputs.export_sarif }}
-          FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
         run: |
           if [ -z "$SEMGREP_APP_TOKEN" ]; then
             echo "Error: SEMGREP_APP_TOKEN is not set"
             exit 1
           fi
-          
-          sca=""
-          if [ "$RUN_SCA" = "true" ]; then
-            sca="--supply-chain"
-          fi
 
-          export=""
-          if [ "$EXPORT_SARIF" = "true" ]; then
-            export="--sarif-output=semgrep.sarif"
-          fi
-          
-          errors=""
-          if [ "$FAIL_ON_ERROR" = "true" ]; then
-            errors="--no-suppress-errors"
-          fi
-          semgrep ci $sca $export $errors
-        continue-on-error: ${{ inputs.fail_on_error == false }}
+          semgrep ci \
+            ${{ inputs.run_sca && '--supply-chain' || '' }} \
+            ${{ inputs.export_sarif && '--sarif-output=semgrep.sarif' || '' }} \
+            ${{ inputs.fail_on_error && '--no-suppress-errors' || '' }}
+        continue-on-error: ${{ !inputs.fail_on_error }}
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
