@@ -32,8 +32,6 @@ jobs:
   semgrep:
     name: semgrep-oss/scan
     runs-on: ubuntu-latest # docker is not installed in slim
-    env:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
     container:
       image: semgrep/semgrep
 
@@ -45,6 +43,8 @@ jobs:
           ref: ${{ inputs.ref || github.ref }}
 
       - name: Run semgrep
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
         run: |
             semgrep ci --sarif --output=semgrep.sarif
         continue-on-error: ${{ inputs.fail_on_error == false }}
