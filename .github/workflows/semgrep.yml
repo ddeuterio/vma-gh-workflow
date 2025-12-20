@@ -31,7 +31,7 @@ permissions:
 jobs:
   semgrep:
     name: semgrep-oss/scan
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest # docker is not installed in slim
 
     container:
       image: semgrep/semgrep
