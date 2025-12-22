@@ -17,7 +17,7 @@ runs:
     - name: Ensure PyYAML is installed
       shell: bash
       run: |
-        python -m pip install --quiet pyyaml
+        python -m pip install --quiet pyyaml --break-system-packages
 
     - name: Read config file
       id: read
