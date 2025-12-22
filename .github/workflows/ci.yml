@@ -9,7 +9,7 @@ on:
 
 jobs:
   config:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     outputs:
       config: ${{ steps.read.outputs.config }}
     steps:
@@ -22,7 +22,7 @@ jobs:
       with:
         config-file-path: ${{ inputs.config-file-path }}
   ci:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     needs: config
     steps:
     - name: Checkout repository
