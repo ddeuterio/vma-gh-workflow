@@ -62,7 +62,7 @@ jobs:
             exit 1
           fi
 
-          docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep ci \
+          docker run -e SEMGREP_APP_TOKEN --rm -v "$PWD:/src" semgrep/semgrep semgrep ci \
             ${{ inputs.run_sca && '--supply-chain' || '' }} \
             ${{ inputs.export_sarif && '--sarif-output=semgrep.sarif' || '' }} \
             ${{ inputs.fail_on_error && '--no-suppress-errors' || '' }}
