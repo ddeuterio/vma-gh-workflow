@@ -42,8 +42,8 @@ jobs:
   semgrep:
     name: semgrep-oss/scan
     runs-on: ubuntu-latest # docker is not installed in slim
-    container:
-      image: semgrep/semgrep
+    # container:
+    #   image: semgrep/semgrep
 
     if: (github.actor != 'dependabot[bot]')
 
@@ -62,7 +62,7 @@ jobs:
             exit 1
           fi
 
-          semgrep ci \
+          docker run --rm -v "$PWD:/src" semgrep/semgrep semgrep ci \
             ${{ inputs.run_sca && '--supply-chain' || '' }} \
             ${{ inputs.export_sarif && '--sarif-output=semgrep.sarif' || '' }} \
             ${{ inputs.fail_on_error && '--no-suppress-errors' || '' }}
