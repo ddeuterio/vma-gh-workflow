@@ -48,7 +48,7 @@ jobs:
     if: (github.actor != 'dependabot[bot]')
 
     steps:
-      - uses: Install semgrep # TODO: use a runner that has semgrep already installed
+      - name: Install semgrep # TODO: use a runner that has semgrep already installed
         run: |
           pip install semgrep --break-system-packages
       - uses: actions/checkout@v4
